@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-2">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">কথন</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto ml-5">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url "kothon-kotha:kotha-list" %}">কথন লিস্ট</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ">
+                <li class="nav-item">
+                    {% include "kotha/search_form.html" %}
+                </li>
+                <li class="nav-item ml-4">
+                    <form class="form-inline mt-1">
+                        <button class="btn btn-sm mr-2 btn-outline-success" type="button">User</button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button"><a class="mybtn" href="{% url 'kothon-kotha:kotha-create' %}">Create Kotha</a></button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

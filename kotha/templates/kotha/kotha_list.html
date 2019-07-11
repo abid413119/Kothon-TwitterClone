@@ -1,4 +1,165 @@
-{% for obj in all_kotha_list %}
-    <a href="{{  }}">{{obj.content}}</a>
-    <br>
-{% endfor %}
+{% extends "base.html" %}
+
+{% block scripts %}
+    <script>
+        // get the q lookup from the url
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+        
+        // jQuery snippet
+        $(document).ready(function(){
+
+            var query = getParameterByName('q')
+            var kothaList = [];
+            var nextKothaPageUrl;
+
+            function updateHashLinks(){
+                $(".media-body").each(function(data){
+                    var hashtagRegex = /(^|\s)#([\w\d-]+)/g
+                    var newText = $(this).html().replace(hashtagRegex, "$1<a href='/tags/$2/'>#$2</a>")
+                    $(this).html(newText)
+                })
+            }
+
+            function parseKotha(){
+                if (kothaList == 0){
+                    $("#kotha-container").text("No kotha yet")
+                }else {
+                    $("#kotha-container").empty();
+                    $.each(kothaList, function(key, value){
+                        var kothaContent = value.content;
+                        var kothaUser = value.user.username;
+                        var usrUrl = value.user.url
+                        var kothaKey = key;
+                        $("#kotha-container").append(
+                            "<div class=\"media\"><div class=\"media-body\">"+ kothaContent + 
+                            "<br/>by <a href='" + usrUrl + "'>"+ kothaUser + "</a> | " + "<a href='#'>view</a>" + "</div></div><hr>"
+                        );
+                    })
+                }
+            }
+            if(query == null){
+                query = "";
+            }else {
+                query = query;
+            }
+
+            function fetchKotha(url){
+                var fetchUrl;
+                if(url){
+                    fetchUrl = url;
+                } else{
+                    fetchUrl = "/api/kotha/?q=" + query
+                }
+                $.ajax({
+                    url: fetchUrl,
+                    method: "GET",
+                    success: function(data){
+                        kothaList = data.results
+                        if ( data.next ){
+                            nextKothaPageUrl = data.next
+                        }else {
+                            $("#loadmore").css("display", "none")
+                        }
+                        
+                        parseKotha()
+                        updateHashLinks()
+                        
+                    },
+                    error: function(data){
+                        console.log("error")
+                        console.log(data)
+                    }
+                })
+            }
+            fetchKotha();
+
+            // loadmore button funcionality 
+            $("#loadmore").click(function(event){
+                event.preventDefault();
+                if(nextKothaPageUrl){
+                    fetchKotha(nextKothaPageUrl)
+                }
+            })
+
+            // character counting and prevent large post 
+            var charTotal = 140;
+            var charCurrent = 0;
+            $("#kotha-form").append("<span id='kothaCharLeft'>Character Limit: " + charTotal + "</span>")
+
+            $("#kotha-form textarea").keyup(function(event){
+                var kothaValue = $(this).val();
+                charCurrent = charTotal - kothaValue.length;
+                var spanChars = $("#kothaCharLeft")
+                spanChars.text("Character Limit: "+ charCurrent)
+
+                if (charCurrent > 0){
+                    spanChars.removeClass("grey-color")
+                    spanChars.removeClass("red-color")
+                }
+                else if (charCurrent == 0){
+                    spanChars.removeClass("red-color")
+                    spanChars.addClass("grey-color");
+                }
+                else if (charCurrent < 0 ){
+                    spanChars.addClass("red-color")
+                    spanChars.removeClass("grey-color")
+                }
+            })
+
+            $("#kotha-form").submit(function(event){
+                event.preventDefault()
+                var this_ = $(this)
+                var form_data = this_.serialize()
+
+                if ( charCurrent > 0 ){
+                    $.ajax({
+                        url: "/api/kotha/create/",
+                        method: "POST",
+                        data: form_data,
+                        success: function(data){
+                            fetchKotha();
+                            updateHashLinks()
+                            $("#kotha-form").find("input[type=text], textarea").val("")
+                        },
+                        error: function(data){
+                            console.log("error")
+                            console.log(data)
+                        }
+                    })
+                }
+                else {
+                    $("#kothaCharLeft").text("Character limit exit")
+                }       
+            });
+        })
+        
+    </script>
+{% endblock scripts %}
+
+
+{% block content %}
+    
+    <div class="row">
+        <div class="col-md-3 col-sm-12" style="background: #1DA1F2;"> 
+            <h3 class="text-white">{{ user }}</h3>
+        </div>
+        <div class="col-md-9 col-md-offset-2 mx-auto">
+            {% if not request.GET.q %}
+                <div class="">
+                    {% include "kotha/kotha_form.html" with form=create_form  btn_title='Create Kothon' form_id="kotha-form" %}
+                </div>
+            {% endif %}
+            <br>
+            <div id="kotha-container"></div>
+            <a href="#" id="loadmore">Load More Kotha</a>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,7 @@
+
+<form id="nav-search-form" class="form-inline my-2 my-lg-0" method="GET" action='{% url "kothon-kotha:kotha-list" %}'>
+  <div class="form-group mr-3 mb-2">
+    <input type="text" name='q' class="form-control" id="search-kotha" value='{{ request.GET.q }}' placeholder="Search">
+  </div>
+  <button type="submit" class="btn btn-primary mb-2">খুঁজুন</button>
+</form>

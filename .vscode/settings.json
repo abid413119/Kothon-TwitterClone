@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "k-env/bin/python"
+    "python.pythonPath": "env\\Scripts\\python.exe",
+    "git.ignoreLimitWarning": true
 }

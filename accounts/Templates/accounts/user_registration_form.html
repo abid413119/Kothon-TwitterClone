@@ -1,0 +1,30 @@
+
+
+
+{% extends "base.html" %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function(){
+        $("form input").addClass("form-control")
+    })
+</script>
+{% endblock scripts %}
+
+{% block content %}
+
+<div class="col-sm-6 col-sm-offset-3 mx-auto my-5">
+<h1 class="text-center">Register</h1>
+
+
+
+<form  id="{% if form_id %}{{form_id}}{% endif %}"  action="{% if action_url %}{{ action_url }}{% endif %}" class="form" method="POST">
+{% csrf_token %}
+    {{ form.as_p }}
+    <input class="btn btn-primary" type="submit" value="Register">
+</form>
+
+
+
+</div>
+{% endblock %}
